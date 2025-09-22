@@ -297,4 +297,58 @@ httpWithCors.route({
   }),
 });
 
+httpWithCors.route({
+  path: "/github/repoZip",
+  method: "GET",
+  handler: httpActionWithErrorHandling(async (ctx, request) => {
+    const url = new URL(request.url);
+    const sessionId = url.searchParams.get("sessionId");
+    const owner = url.searchParams.get("owner");
+    const repo = url.searchParams.get("repo");
+    const ref = url.searchParams.get("ref") ?? "main";
+
+    if (!sessionId || !owner || !repo) {
+      return new Response(JSON.stringify({ error: "Missing required params" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const token = await ctx.runQuery(internal.github.getTokenForSession, {
+      sessionId: sessionId as Id<"sessions">,
+    });
+    if (!token) {
+      return new Response(JSON.stringify({ error: "GitHub not connected" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const ghUrl = `https://api.github.com/repos/${owner}/${repo}/zipball/${encodeURIComponent(ref)}`;
+    const ghResp = await fetch(ghUrl, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "convex-chef",
+      },
+    });
+    if (!ghResp.ok) {
+      const body = await ghResp.text();
+      return new Response(JSON.stringify({ error: `GitHub zip fetch failed: ${ghResp.status} ${body}` }), {
+        status: 502,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    const blob = await ghResp.blob();
+    return new Response(blob, {
+      status: 200,
+      headers: {
+        "Content-Type": ghResp.headers.get("Content-Type") ?? "application/zip",
+        "Content-Disposition": ghResp.headers.get("Content-Disposition") ?? "attachment",
+      },
+    });
+  }),
+});
+
 export default httpWithCors.http;

@@ -4,6 +4,7 @@ import { ThemeCard } from '~/components/settings/ThemeCard';
 import { ProfileCard } from '~/components/settings/ProfileCard';
 import { UsageCard } from '~/components/settings/UsageCard';
 import { GitHubCard } from '~/components/settings/GitHubCard';
+import { GitHubConnectCard } from '~/components/settings/GitHubConnectCard';
 import { Toaster } from '~/components/ui/Toaster';
 import { UserProvider } from '~/components/UserProvider';
 
