@@ -9,10 +9,20 @@ import { Spinner } from '@ui/Spinner';
 import type { Id } from '@convex/_generated/dataModel';
 
 export function GitCard() {
-  // Note: This will need to be uncommented once gitRepositories API is generated
-  // const repositories = useQuery(api.gitRepositories.listGitRepositoriesForCurrentMember);
-  const repositories: GitRepository[] = []; // Temporary placeholder
-  const [isLoading, setIsLoading] = useState(false);
+  // For demo purposes, using local state with sample data
+  // This will be replaced with actual Convex queries once backend is set up
+  const [repositories, setRepositories] = useState<GitRepository[]>([
+    {
+      _id: 'demo-1' as Id<'gitRepositories'>,
+      name: 'my-awesome-app',
+      url: 'https://github.com/username/my-awesome-app',
+      branch: 'main',
+      isPrivate: false,
+      createdAt: Date.now() - 86400000, // 1 day ago
+      updatedAt: Date.now() - 86400000,
+    },
+  ]);
+  const [isLoading] = useState(false);
 
   return (
     <div className="rounded-lg border bg-bolt-elements-background-depth-1 shadow-sm">
@@ -29,15 +39,10 @@ export function GitCard() {
 
         <div className="space-y-4">
           {repositories?.map((repo: GitRepository) => (
-            <GitRepositoryItem
-              key={repo._id}
-              repository={repo}
-              isLoading={isLoading}
-              onUpdate={() => setIsLoading(!isLoading)}
-            />
+            <GitRepositoryItem key={repo._id} repository={repo} isLoading={isLoading} onUpdate={setRepositories} />
           ))}
 
-          <AddGitRepositoryForm isLoading={isLoading} onUpdate={() => setIsLoading(!isLoading)} />
+          <AddGitRepositoryForm isLoading={isLoading} onUpdate={setRepositories} />
         </div>
       </div>
     </div>
@@ -61,7 +66,7 @@ function GitRepositoryItem({
 }: {
   repository: GitRepository;
   isLoading: boolean;
-  onUpdate: () => void;
+  onUpdate: React.Dispatch<React.SetStateAction<GitRepository[]>>;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -82,27 +87,17 @@ function GitRepositoryItem({
 
     try {
       setIsDeleting(true);
-      // Note: This will need to be uncommented once gitRepositories API is generated
-      /*
-      await convex.mutation(api.gitRepositories.updateGitRepositoryForCurrentMember, {
-        repositoryId: repository._id,
-        repository: {
-          name: formData.name.trim(),
-          url: formData.url.trim(),
-          branch: formData.branch.trim() || 'main',
-          accessToken: formData.accessToken.trim() || undefined,
-          isPrivate: formData.isPrivate,
-        },
-      });
-      */
-
-      toast.success('Repository updated successfully');
-      setIsEditing(false);
-      onUpdate();
+      // Simulate API call with demo functionality
+      setTimeout(() => {
+        // Update the repository in parent component
+        onUpdate([]);
+        toast.success('Repository updated successfully');
+        setIsEditing(false);
+        setIsDeleting(false);
+      }, 1000);
     } catch (error) {
       captureException(error);
       toast.error('Failed to update repository');
-    } finally {
       setIsDeleting(false);
     }
   };
@@ -114,19 +109,15 @@ function GitRepositoryItem({
 
     try {
       setIsDeleting(true);
-      // Note: This will need to be uncommented once gitRepositories API is generated
-      /*
-      await convex.mutation(api.gitRepositories.deleteGitRepositoryForCurrentMember, {
-        repositoryId: repository._id,
-      });
-      */
-
-      toast.success('Repository deleted successfully');
-      onUpdate();
+      // Simulate API call with demo functionality
+      setTimeout(() => {
+        onUpdate([]);
+        toast.success('Repository deleted successfully');
+        setIsDeleting(false);
+      }, 1000);
     } catch (error) {
       captureException(error);
       toast.error('Failed to delete repository');
-    } finally {
       setIsDeleting(false);
     }
   };
@@ -231,7 +222,13 @@ function GitRepositoryItem({
   );
 }
 
-function AddGitRepositoryForm({ isLoading, onUpdate }: { isLoading: boolean; onUpdate: () => void }) {
+function AddGitRepositoryForm({
+  isLoading,
+  onUpdate,
+}: {
+  isLoading: boolean;
+  onUpdate: React.Dispatch<React.SetStateAction<GitRepository[]>>;
+}) {
   const [isAdding, setIsAdding] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showToken, setShowToken] = useState(false);
@@ -251,33 +248,33 @@ function AddGitRepositoryForm({ isLoading, onUpdate }: { isLoading: boolean; onU
 
     try {
       setIsSaving(true);
-      // Note: This will need to be uncommented once gitRepositories API is generated
-      /*
-      await convex.mutation(api.gitRepositories.addGitRepositoryForCurrentMember, {
-        repository: {
+      // Simulate API call with demo functionality
+      setTimeout(() => {
+        const newRepo: GitRepository = {
+          _id: `demo-${Date.now()}` as Id<'gitRepositories'>,
           name: formData.name.trim(),
           url: formData.url.trim(),
           branch: formData.branch.trim() || 'main',
-          accessToken: formData.accessToken.trim() || undefined,
           isPrivate: formData.isPrivate,
-        },
-      });
-      */
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        };
 
-      toast.success('Repository added successfully');
-      setIsAdding(false);
-      setFormData({
-        name: '',
-        url: '',
-        branch: 'main',
-        accessToken: '',
-        isPrivate: false,
-      });
-      onUpdate();
+        onUpdate((prev: GitRepository[]) => [...prev, newRepo]);
+        toast.success('Repository added successfully');
+        setIsAdding(false);
+        setFormData({
+          name: '',
+          url: '',
+          branch: 'main',
+          accessToken: '',
+          isPrivate: false,
+        });
+        setIsSaving(false);
+      }, 1000);
     } catch (error) {
       captureException(error);
       toast.error('Failed to add repository');
-    } finally {
       setIsSaving(false);
     }
   };
