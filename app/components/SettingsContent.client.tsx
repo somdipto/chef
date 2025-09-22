@@ -3,6 +3,7 @@ import { ApiKeyCard } from '~/components/settings/ApiKeyCard';
 import { ThemeCard } from '~/components/settings/ThemeCard';
 import { ProfileCard } from '~/components/settings/ProfileCard';
 import { UsageCard } from '~/components/settings/UsageCard';
+import { GitCard } from '~/components/settings/GitCard';
 import { Toaster } from '~/components/ui/Toaster';
 import { UserProvider } from '~/components/UserProvider';
 
@@ -22,6 +23,7 @@ export function SettingsContent() {
             <ProfileCard />
             <UsageCard />
             <ApiKeyCard />
+            <GitCard />
             <ThemeCard />
           </div>
         </div>
