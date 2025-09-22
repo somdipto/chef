@@ -6,6 +6,8 @@ import { ConvexError } from "convex/values";
 import { openaiProxy } from "./openaiProxy";
 import { corsRouter } from "convex-helpers/server/cors";
 import { resendProxy } from "./resendProxy";
+import { httpAction as baseHttpAction } from "./_generated/server";
+import { getCurrentMember } from "./sessions";
 
 const http = httpRouter();
 const httpWithCors = corsRouter(http, {
@@ -108,6 +110,52 @@ httpWithCors.route({
     const blob = await ctx.storage.get(storageInfo.storageId);
     return new Response(blob, {
       status: 200,
+    });
+  }),
+});
+
+// Minimal proxy to fetch a GitHub repository archive using the member's stored token.
+httpWithCors.route({
+  path: "/github/archive",
+  method: "GET",
+  handler: baseHttpAction(async (ctx, request) => {
+    const member = await getCurrentMember(ctx);
+    if (!member.githubAuth) {
+      return new Response(JSON.stringify({ error: "Not connected to GitHub" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    const url = new URL(request.url);
+    const fullName = url.searchParams.get("full_name");
+    const ref = url.searchParams.get("ref") ?? "HEAD";
+    if (!fullName) {
+      return new Response(JSON.stringify({ error: "Missing full_name" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    const apiUrl = `https://api.github.com/repos/${fullName}/zipball/${encodeURIComponent(ref)}`;
+    const res = await fetch(apiUrl, {
+      headers: {
+        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${member.githubAuth.accessToken}`,
+      },
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      return new Response(JSON.stringify({ error: `GitHub fetch failed: ${res.status}`, body }), {
+        status: 502,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    // Stream through the zip payload
+    return new Response(res.body, {
+      status: 200,
+      headers: {
+        "Content-Type": "application/zip",
+        "Content-Disposition": `attachment; filename=${fullName!.split("/").pop()}-${ref}.zip`,
+      },
     });
   }),
 });
