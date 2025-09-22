@@ -49,6 +49,15 @@ export default defineSchema({
         id: v.string(),
       }),
     ),
+    // GitHub integration fields
+    githubToken: v.optional(v.string()),
+    githubUser: v.optional(v.object({
+      id: v.number(),
+      login: v.string(),
+      name: v.union(v.string(), v.null()),
+      avatar_url: v.string(),
+      email: v.union(v.string(), v.null()),
+    })),
   })
     .index("byTokenIdentifier", ["tokenIdentifier"])
     .index("byConvexMemberId", ["convexMemberId", "softDeletedForWorkOSMerge"]),
