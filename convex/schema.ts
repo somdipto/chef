@@ -12,6 +12,14 @@ export const apiKeyValidator = v.object({
   google: v.optional(v.string()),
 });
 
+export const gitRepositoryValidator = v.object({
+  name: v.string(),
+  url: v.string(),
+  branch: v.optional(v.string()),
+  accessToken: v.optional(v.string()),
+  isPrivate: v.boolean(),
+});
+
 // A stable-enough way to store token usage.
 export const usageRecordValidator = v.object({
   completionTokens: v.number(),
@@ -52,6 +60,19 @@ export default defineSchema({
   })
     .index("byTokenIdentifier", ["tokenIdentifier"])
     .index("byConvexMemberId", ["convexMemberId", "softDeletedForWorkOSMerge"]),
+
+  gitRepositories: defineTable({
+    memberId: v.id("convexMembers"),
+    name: v.string(),
+    url: v.string(),
+    branch: v.optional(v.string()),
+    accessToken: v.optional(v.string()),
+    isPrivate: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("byMemberId", ["memberId"])
+    .index("byMemberIdAndName", ["memberId", "name"]),
 
   /*
    * Admin status means being on the convex team on the provision host.
