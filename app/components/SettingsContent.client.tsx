@@ -3,6 +3,7 @@ import { ApiKeyCard } from '~/components/settings/ApiKeyCard';
 import { ThemeCard } from '~/components/settings/ThemeCard';
 import { ProfileCard } from '~/components/settings/ProfileCard';
 import { UsageCard } from '~/components/settings/UsageCard';
+import { GithubConnectCard } from '~/components/settings/GithubConnectCard';
 import { Toaster } from '~/components/ui/Toaster';
 import { UserProvider } from '~/components/UserProvider';
 
@@ -21,6 +22,7 @@ export function SettingsContent() {
           <div className="space-y-6">
             <ProfileCard />
             <UsageCard />
+            <GithubConnectCard />
             <ApiKeyCard />
             <ThemeCard />
           </div>

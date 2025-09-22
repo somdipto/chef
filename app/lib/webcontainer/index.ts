@@ -51,6 +51,19 @@ if (shouldBootWebcontainer) {
         webcontainer.on('preview-message', (message) => {
           logger.info('WebContainer preview message:', JSON.stringify(message));
 
+          // Handle custom messages for GitHub import
+          if ((message as any).type === 'chef:import-github' && typeof (message as any).fullName === 'string') {
+            // TODO: Implement fetch and extraction of repo contents via GitHub API
+            // For now, just surface an alert that import is not yet implemented.
+            workbenchStore.actionAlert.set({
+              type: 'preview',
+              title: 'Import from GitHub',
+              description: `Requested import for ${(message as any).fullName}.`,
+              content: 'Import flow will fetch a repo archive and write files into your workspace.',
+              source: 'preview',
+            });
+          }
+
           // Handle both uncaught exceptions and unhandled promise rejections
           if (message.type === 'PREVIEW_UNCAUGHT_EXCEPTION' || message.type === 'PREVIEW_UNHANDLED_REJECTION') {
             const isPromise = message.type === 'PREVIEW_UNHANDLED_REJECTION';
