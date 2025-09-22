@@ -339,6 +339,38 @@ export class WorkbenchStore {
     }
   }
 
+  async importZip(blob: Blob) {
+    // Lightweight inline unzip using JSZip (already used elsewhere)
+    const { default: JSZip } = await import('jszip');
+    const zip = await JSZip.loadAsync(blob);
+    // Determine common root folder (GitHub zipball style)
+    const names = Object.keys(zip.files);
+    const root = (() => {
+      const first = names[0];
+      if (!first) return '';
+      const idx = first.indexOf('/');
+      if (idx === -1) return '';
+      const r = first.slice(0, idx + 1);
+      return names.every((n) => n.startsWith(r)) ? r : '';
+    })();
+    for (const [name, entry] of Object.entries(zip.files)) {
+      if (entry.dir) continue;
+      const relPath = root ? name.replace(new RegExp('^' + root), '') : name;
+      if (!relPath || relPath.endsWith('/')) continue;
+      const content = await entry.async('uint8array');
+      const isBinary = this.#filesStore ? (content.some((b) => (b === 9 || b === 10 || b === 13) ? false : b < 32 || b > 126)) : false;
+      const abs = getAbsolutePath(`${WORK_DIR}/${relPath}`);
+      if (!isBinary) {
+        const text = new TextDecoder('utf-8').decode(content);
+        // Write via store so watchers update
+        await this.#filesStore.saveFile(abs, text);
+      } else {
+        // Skip binaries for now
+        continue;
+      }
+    }
+  }
+
   getFileModifcations() {
     return this.#filesStore.getFileModifications();
   }
