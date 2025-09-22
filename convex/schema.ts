@@ -12,6 +12,14 @@ export const apiKeyValidator = v.object({
   google: v.optional(v.string()),
 });
 
+export const githubIntegrationValidator = v.object({
+  accessToken: v.string(),
+  username: v.string(),
+  avatarUrl: v.optional(v.string()),
+  connectedAt: v.number(),
+  lastSyncAt: v.optional(v.number()),
+});
+
 // A stable-enough way to store token usage.
 export const usageRecordValidator = v.object({
   completionTokens: v.number(),
@@ -21,6 +29,21 @@ export const usageRecordValidator = v.object({
 });
 
 export type UsageRecord = Infer<typeof usageRecordValidator>;
+
+export const githubRepositoryValidator = v.object({
+  id: v.number(),
+  name: v.string(),
+  fullName: v.string(),
+  description: v.optional(v.string()),
+  private: v.boolean(),
+  htmlUrl: v.string(),
+  cloneUrl: v.string(),
+  defaultBranch: v.string(),
+  language: v.optional(v.string()),
+  stargazersCount: v.number(),
+  forksCount: v.number(),
+  updatedAt: v.string(),
+});
 
 export default defineSchema({
   /*
@@ -40,6 +63,7 @@ export default defineSchema({
     apiKey: v.optional(apiKeyValidator),
     convexMemberId: v.optional(v.string()),
     softDeletedForWorkOSMerge: v.optional(v.boolean()),
+    githubIntegration: v.optional(githubIntegrationValidator),
     // Not authoritative, just a cache of the user's profile from WorkOS/provision host.
     cachedProfile: v.optional(
       v.object({
@@ -62,6 +86,14 @@ export default defineSchema({
     lastCheckedForAdminStatus: v.number(),
     wasAdmin: v.boolean(),
   }).index("byConvexMemberId", ["convexMemberId"]),
+
+  githubRepositories: defineTable({
+    memberId: v.id("convexMembers"),
+    repository: githubRepositoryValidator,
+    syncedAt: v.number(),
+  })
+    .index("byMemberId", ["memberId"])
+    .index("byMemberIdAndRepoId", ["memberId", "repository.id"]),
 
   /*
    * All chats have two IDs -- an `initialId` that is always set (UUID) and a `urlId`
