@@ -5,6 +5,7 @@ import { ProfileCard } from '~/components/settings/ProfileCard';
 import { UsageCard } from '~/components/settings/UsageCard';
 import { Toaster } from '~/components/ui/Toaster';
 import { UserProvider } from '~/components/UserProvider';
+import { GitHubConnectCard } from '~/components/settings/GitHubConnectCard';
 
 export function SettingsContent() {
   return (
@@ -21,6 +22,7 @@ export function SettingsContent() {
           <div className="space-y-6">
             <ProfileCard />
             <UsageCard />
+            <GitHubConnectCard />
             <ApiKeyCard />
             <ThemeCard />
           </div>

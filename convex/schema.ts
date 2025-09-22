@@ -63,6 +63,16 @@ export default defineSchema({
     wasAdmin: v.boolean(),
   }).index("byConvexMemberId", ["convexMemberId"]),
 
+  // Stores GitHub OAuth tokens per Convex member
+  githubTokens: defineTable({
+    memberId: v.id("convexMembers"),
+    accessToken: v.string(),
+    tokenType: v.optional(v.string()),
+    scope: v.optional(v.string()),
+    refreshToken: v.optional(v.string()),
+    expiresAt: v.optional(v.number()), // epoch ms
+  }).index("byMemberId", ["memberId"]),
+
   /*
    * All chats have two IDs -- an `initialId` that is always set (UUID) and a `urlId`
    * that is more human friendly (e.g. "tic-tac-toe").
