@@ -17,6 +17,7 @@ import type * as crons from "../crons.js";
 import type * as debugPrompt from "../debugPrompt.js";
 import type * as deploy from "../deploy.js";
 import type * as dev from "../dev.js";
+import type * as github from "../github.js";
 import type * as http from "../http.js";
 import type * as lz4 from "../lz4.js";
 import type * as lz4Wasm from "../lz4Wasm.js";
@@ -56,6 +57,7 @@ declare const fullApi: ApiFromModules<{
   debugPrompt: typeof debugPrompt;
   deploy: typeof deploy;
   dev: typeof dev;
+  github: typeof github;
   http: typeof http;
   lz4: typeof lz4;
   lz4Wasm: typeof lz4Wasm;

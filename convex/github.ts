@@ -2,9 +2,100 @@
 
 import { ConvexError, v } from "convex/values";
 import { action, internalMutation, internalQuery, mutation, query } from "./_generated/server";
-import { internal } from "./_generated/api";
 import { githubIntegrationValidator, githubRepositoryValidator } from "./schema";
 import { getMemberByConvexMemberIdQuery } from "./sessions";
+
+// Forward declare internal functions for use in actions
+const saveGithubIntegrationRef = internalMutation({
+  args: { githubIntegration: githubIntegrationValidator },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError({ code: "NotAuthorized", message: "Unauthorized" });
+    }
+
+    const existingMember = await getMemberByConvexMemberIdQuery(ctx, identity).first();
+    if (!existingMember) {
+      throw new ConvexError({ code: "NotAuthorized", message: "Unauthorized" });
+    }
+
+    await ctx.db.patch(existingMember._id, { githubIntegration: args.githubIntegration });
+  },
+});
+
+const getGithubIntegrationInternalRef = internalQuery({
+  args: {},
+  returns: v.union(v.null(), githubIntegrationValidator),
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return null;
+    }
+    const existingMember = await getMemberByConvexMemberIdQuery(ctx, identity).first();
+    return existingMember?.githubIntegration || null;
+  },
+});
+
+const saveGithubRepositoriesRef = internalMutation({
+  args: { repositories: v.array(v.any()) },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError({ code: "NotAuthorized", message: "Unauthorized" });
+    }
+
+    const existingMember = await getMemberByConvexMemberIdQuery(ctx, identity).first();
+    if (!existingMember) {
+      throw new ConvexError({ code: "NotAuthorized", message: "Unauthorized" });
+    }
+
+    const now = Date.now();
+
+    // Clear existing repositories for this member
+    const existingRepos = await ctx.db
+      .query("githubRepositories")
+      .withIndex("byMemberId", (q) => q.eq("memberId", existingMember._id))
+      .collect();
+
+    for (const repo of existingRepos) {
+      await ctx.db.delete(repo._id);
+    }
+
+    // Save new repositories
+    for (const repo of args.repositories) {
+      const repository = {
+        id: repo.id,
+        name: repo.name,
+        fullName: repo.full_name,
+        description: repo.description || undefined,
+        private: repo.private,
+        htmlUrl: repo.html_url,
+        cloneUrl: repo.clone_url,
+        defaultBranch: repo.default_branch,
+        language: repo.language || undefined,
+        stargazersCount: repo.stargazers_count,
+        forksCount: repo.forks_count,
+        updatedAt: repo.updated_at,
+      };
+
+      await ctx.db.insert("githubRepositories", {
+        memberId: existingMember._id,
+        repository,
+        syncedAt: now,
+      });
+    }
+
+    // Update last sync time
+    await ctx.db.patch(existingMember._id, {
+      githubIntegration: {
+        ...existingMember.githubIntegration!,
+        lastSyncAt: now,
+      },
+    });
+  },
+});
 
 export const getGithubIntegration = query({
   args: {},
@@ -41,18 +132,8 @@ export const getGithubRepositories = query({
   },
 });
 
-export const getGithubIntegrationInternal = internalQuery({
-  args: {},
-  returns: v.union(v.null(), githubIntegrationValidator),
-  handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return null;
-    }
-    const existingMember = await getMemberByConvexMemberIdQuery(ctx, identity).first();
-    return existingMember?.githubIntegration || null;
-  },
-});
+// Export the internal functions for the API
+export const getGithubIntegrationInternal = getGithubIntegrationInternalRef;
 
 export const connectGithubAccount = action({
   args: {
@@ -121,7 +202,8 @@ export const connectGithubAccount = action({
         connectedAt: Date.now(),
       };
 
-      await ctx.runMutation(internal.github.saveGithubIntegration, { githubIntegration });
+      // Save the GitHub integration via mutation
+      await ctx.runMutation(saveGithubIntegrationRef, { githubIntegration });
 
       return { success: true, username: userData.login };
     } catch (error) {
@@ -131,25 +213,8 @@ export const connectGithubAccount = action({
   },
 });
 
-export const saveGithubIntegration = internalMutation({
-  args: {
-    githubIntegration: githubIntegrationValidator,
-  },
-  returns: v.null(),
-  handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError({ code: "NotAuthorized", message: "Unauthorized" });
-    }
-
-    const existingMember = await getMemberByConvexMemberIdQuery(ctx, identity).first();
-    if (!existingMember) {
-      throw new ConvexError({ code: "NotAuthorized", message: "Unauthorized" });
-    }
-
-    await ctx.db.patch(existingMember._id, { githubIntegration: args.githubIntegration });
-  },
-});
+// Export the internal functions for the API
+export const saveGithubIntegration = saveGithubIntegrationRef;
 
 export const syncGithubRepositories = action({
   args: {},
@@ -165,7 +230,7 @@ export const syncGithubRepositories = action({
     }
 
     try {
-      const githubIntegration = await ctx.runQuery(internal.github.getGithubIntegrationInternal);
+      const githubIntegration = await ctx.runQuery(getGithubIntegrationInternalRef);
       if (!githubIntegration) {
         return { success: false, error: "GitHub account not connected" };
       }
@@ -185,7 +250,7 @@ export const syncGithubRepositories = action({
       const repositories = await reposResponse.json();
 
       // Save repositories to database
-      await ctx.runMutation(internal.github.saveGithubRepositories, { repositories });
+      await ctx.runMutation(saveGithubRepositoriesRef, { repositories });
 
       return { success: true, count: repositories.length };
     } catch (error) {
@@ -195,67 +260,7 @@ export const syncGithubRepositories = action({
   },
 });
 
-export const saveGithubRepositories = internalMutation({
-  args: {
-    repositories: v.array(v.any()),
-  },
-  returns: v.null(),
-  handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError({ code: "NotAuthorized", message: "Unauthorized" });
-    }
-
-    const existingMember = await getMemberByConvexMemberIdQuery(ctx, identity).first();
-    if (!existingMember) {
-      throw new ConvexError({ code: "NotAuthorized", message: "Unauthorized" });
-    }
-
-    const now = Date.now();
-
-    // Clear existing repositories for this member
-    const existingRepos = await ctx.db
-      .query("githubRepositories")
-      .withIndex("byMemberId", (q) => q.eq("memberId", existingMember._id))
-      .collect();
-
-    for (const repo of existingRepos) {
-      await ctx.db.delete(repo._id);
-    }
-
-    // Save new repositories
-    for (const repo of args.repositories) {
-      const repository = {
-        id: repo.id,
-        name: repo.name,
-        fullName: repo.full_name,
-        description: repo.description || undefined,
-        private: repo.private,
-        htmlUrl: repo.html_url,
-        cloneUrl: repo.clone_url,
-        defaultBranch: repo.default_branch,
-        language: repo.language || undefined,
-        stargazersCount: repo.stargazers_count,
-        forksCount: repo.forks_count,
-        updatedAt: repo.updated_at,
-      };
-
-      await ctx.db.insert("githubRepositories", {
-        memberId: existingMember._id,
-        repository,
-        syncedAt: now,
-      });
-    }
-
-    // Update last sync time
-    await ctx.db.patch(existingMember._id, {
-      githubIntegration: {
-        ...existingMember.githubIntegration!,
-        lastSyncAt: now,
-      },
-    });
-  },
-});
+export const saveGithubRepositories = saveGithubRepositoriesRef;
 
 export const disconnectGithubAccount = mutation({
   args: {},

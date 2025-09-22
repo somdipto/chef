@@ -92,8 +92,7 @@ export default defineSchema({
     repository: githubRepositoryValidator,
     syncedAt: v.number(),
   })
-    .index("byMemberId", ["memberId"])
-    .index("byMemberIdAndRepoId", ["memberId", "repository.id"]),
+    .index("byMemberId", ["memberId"]),
 
   /*
    * All chats have two IDs -- an `initialId` that is always set (UUID) and a `urlId`

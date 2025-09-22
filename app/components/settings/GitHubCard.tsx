@@ -70,7 +70,7 @@ export function GitHubCard() {
   }, [searchParams, convex, isConnecting, setSearchParams]);
 
   const handleConnectGitHub = () => {
-    const clientId = process.env.VITE_GITHUB_CLIENT_ID || import.meta.env.VITE_GITHUB_CLIENT_ID;
+    const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
     
     if (!clientId) {
       toast.error('GitHub integration not configured');
