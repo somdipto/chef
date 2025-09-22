@@ -240,4 +240,9 @@ export default defineSchema({
   })
     .index("name", ["name"])
     .index("isDone", ["isDone"]),
+  // Added table for GitHub OAuth tokens per member
+  githubTokens: defineTable({
+    memberId: v.id("convexMembers"),
+    token: v.string(),
+  }).index("by_memberId", ["memberId"]),
 });
