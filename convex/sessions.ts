@@ -277,3 +277,21 @@ export function getMemberByConvexMemberIdQuery(ctx: QueryCtx, identity: UserIden
       q.eq("convexMemberId", identity.convex_member_id as string).lt("softDeletedForWorkOSMerge", true),
     );
 }
+
+export const getCurrentMemberDetails = query({
+  args: {},
+  returns: v.union(v.null(), v.object({
+    tokenIdentifier: v.string(),
+    githubAccessToken: v.optional(v.string()),
+  })),
+  handler: async (ctx) => {
+    const member = await getCurrentMember(ctx);
+    if (!member) {
+      return null;
+    }
+    return {
+      tokenIdentifier: member.tokenIdentifier,
+      githubAccessToken: member.githubAccessToken,
+    };
+  },
+});

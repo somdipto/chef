@@ -40,6 +40,7 @@ export default defineSchema({
     apiKey: v.optional(apiKeyValidator),
     convexMemberId: v.optional(v.string()),
     softDeletedForWorkOSMerge: v.optional(v.boolean()),
+    githubAccessToken: v.optional(v.string()),
     // Not authoritative, just a cache of the user's profile from WorkOS/provision host.
     cachedProfile: v.optional(
       v.object({
