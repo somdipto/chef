@@ -6,6 +6,7 @@ import { ConvexError } from "convex/values";
 import { openaiProxy } from "./openaiProxy";
 import { corsRouter } from "convex-helpers/server/cors";
 import { resendProxy } from "./resendProxy";
+import { zipballProxy } from "./github";
 
 const http = httpRouter();
 const httpWithCors = corsRouter(http, {
@@ -74,6 +75,12 @@ http.route({
   pathPrefix: "/resend-proxy/",
   method: "POST",
   handler: resendProxy,
+});
+
+http.route({
+  path: "/github/zipball",
+  method: "GET",
+  handler: zipballProxy,
 });
 
 httpWithCors.route({
