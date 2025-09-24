@@ -1,13 +1,6 @@
 # 🍳 Chef - AI-Powered Full-Stack App Builder
 
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://chef.convex.dev/github-header-dark.svg">
-    <img alt="Chef by Convex'" src="https://chef.convex.dev/github-header-light.svg" width="600">
-  </picture>
-</p>
-
-<p align="center">
   <strong>The only AI app builder that truly knows backend development</strong>
 </p>
 
