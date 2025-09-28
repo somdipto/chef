@@ -1,0 +1,153 @@
+.App {
+  text-align: center;
+}
+
+.App-header {
+  background-color: #282c34;
+  padding: 20px;
+  color: white;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.wallet-section {
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 800px;
+}
+
+.wallet-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #3a3f47;
+  padding: 10px 20px;
+  border-radius: 8px;
+}
+
+button {
+  background-color: #61dafb;
+  border: none;
+  color: #282c34;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+button:hover {
+  background-color: #21a9c7;
+}
+
+button.active {
+  background-color: #21a9c7;
+  color: white;
+}
+
+.dashboard {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  width: 100%;
+  max-width: 1200px;
+  gap: 20px;
+}
+
+.stocks-section, .trading-section, .portfolio-section {
+  background-color: #3a3f47;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.stock-list, .portfolio-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stock-item, .portfolio-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: #454a52;
+  border-radius: 4px;
+}
+
+.stock-symbol {
+  font-weight: bold;
+  color: #61dafb;
+}
+
+.stock-name {
+  flex-grow: 1;
+  text-align: left;
+  margin: 0 10px;
+}
+
+.stock-price {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.quantity {
+  margin: 0 10px;
+}
+
+.current-price {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.trade-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.trade-controls select,
+.trade-controls input {
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0;
+  border-radius: 4px;
+  border: none;
+  background-color: #fff;
+  color: #282c34;
+}
+
+.trade-type-buttons {
+  display: flex;
+  width: 100%;
+  gap: 10px;
+}
+
+.trade-type-buttons button {
+  flex: 1;
+}
+
+h2 {
+  margin-top: 0;
+  color: #61dafb;
+}
+
+@media (max-width: 768px) {
+  .dashboard {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .stocks-section, .trading-section, .portfolio-section {
+    width: 90%;
+  }
+}
