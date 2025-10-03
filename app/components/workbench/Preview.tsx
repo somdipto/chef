@@ -249,12 +249,12 @@ export const Preview = memo(function Preview({ showClose, onClose }: { showClose
       {isPortDropdownOpen && (
         <div className="z-iframe-overlay absolute size-full" onClick={() => setIsPortDropdownOpen(false)} />
       )}
-      <div className="flex items-center gap-2 bg-bolt-elements-background-depth-2 p-2">
+      <div className="flex items-center gap-2 bg-bolt-elements-background-depth-1 p-2.5 border-b border-bolt-elements-borderColor">
         <div className="flex items-center gap-2">
           <IconButton icon={<UpdateIcon />} onClick={reloadPreview} />
         </div>
 
-        <div className="flex grow items-center gap-1 rounded-full border bg-bolt-elements-preview-addressBar-background px-3 py-1 text-sm text-bolt-elements-preview-addressBar-text focus-within:border-border-selected focus-within:bg-bolt-elements-preview-addressBar-backgroundActive focus-within:text-bolt-elements-preview-addressBar-textActive hover:bg-bolt-elements-preview-addressBar-backgroundHover hover:focus-within:bg-bolt-elements-preview-addressBar-backgroundActive">
+        <div className="flex grow items-center gap-1 rounded-lg border border-bolt-elements-borderColor bg-bolt-elements-background-depth-2 px-3 py-1.5 text-sm text-bolt-elements-textPrimary focus-within:border-bolt-elements-borderColor focus-within:bg-bolt-elements-background-depth-3 focus-within:text-bolt-elements-textPrimary hover:bg-bolt-elements-background-depth-2 hover:focus-within:bg-bolt-elements-background-depth-3">
           <input
             title="URL"
             ref={inputRef}
@@ -333,7 +333,7 @@ export const Preview = memo(function Preview({ showClose, onClose }: { showClose
         </div>
       </div>
 
-      <div className="flex flex-1 items-center justify-center overflow-auto border-t">
+      <div className="flex flex-1 items-center justify-center overflow-auto border-t border-bolt-elements-borderColor bg-bolt-elements-background-depth-2">
         <div
           style={{
             width: isDeviceModeOn ? `${widthPercent}%` : '100%',
@@ -356,14 +356,15 @@ export const Preview = memo(function Preview({ showClose, onClose }: { showClose
                 allowFullScreen={true}
               />
             ) : (
-              <div className="flex size-full items-center justify-center bg-bolt-elements-background-depth-1 text-content-primary">
-                <div>
+              <div className="flex size-full items-center justify-center bg-bolt-elements-background-depth-1 text-bolt-elements-textPrimary">
+                <div className="flex flex-col items-center gap-3">
                   <Spinner />
+                  <p className="text-sm font-medium">Loading preview...</p>
                 </div>
               </div>
             )
           ) : (
-            <div className="flex size-full items-center justify-center bg-bolt-elements-background-depth-1 text-content-primary">
+            <div className="flex size-full items-center justify-center bg-bolt-elements-background-depth-1 text-bolt-elements-textPrimary font-medium">
               No preview available
             </div>
           )}

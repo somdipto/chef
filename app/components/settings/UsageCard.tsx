@@ -72,7 +72,6 @@ export function UsageCard() {
                 <h3 className="text-lg font-semibold">You&apos;ve used all the tokens included with your free plan.</h3>
                 <div className="flex flex-wrap items-center gap-3">
                   <Button
-                    variant="primary"
                     href={`https://dashboard.convex.dev/t/${selectedTeamSlug}/settings/billing?source=chef`}
                     icon={<ExternalLinkIcon />}
                   >
@@ -84,7 +83,6 @@ export function UsageCard() {
             </Callout>
           ) : (
             <Button
-              variant="secondary"
               icon={<ExternalLinkIcon />}
               inline
               href={`https://dashboard.convex.dev/t/${selectedTeamSlug}/settings/billing`}

@@ -49,11 +49,11 @@ export function Header({ hideSidebarIcon = false }: { hideSidebarIcon?: boolean 
   };
 
   return (
-    <header className={'flex h-[var(--header-height)] items-center overflow-x-auto overflow-y-hidden border-b p-5'}>
-      <div className="z-40 flex cursor-pointer items-center gap-4 text-content-primary">
+    <header className={'flex h-[var(--header-height)] items-center overflow-x-auto overflow-y-hidden border-b border-bolt-elements-borderColor bg-gradient-to-r from-bolt-elements-background-depth-1 to-bolt-elements-background-depth-2 px-5 shadow-sm'}>
+      <div className="z-40 flex cursor-pointer items-center gap-5 text-bolt-elements-textPrimary">
         {showSidebarIcon && (
           <HamburgerMenuIcon
-            className="shrink-0"
+            className="size-6 shrink-0 text-bolt-elements-textPrimary hover:opacity-80 transition-opacity"
             data-hamburger-menu
             onClick={(e) => {
               e.stopPropagation();
@@ -61,15 +61,15 @@ export function Header({ hideSidebarIcon = false }: { hideSidebarIcon?: boolean 
             }}
           />
         )}
-        <a href="/">
+        <a href="/" className="flex items-center">
           {/* The logo is shifted up slightly, to visually align it with the hamburger icon. */}
-          <img src="/chef.svg" alt="Chef logo" width={72} height={42} className="relative -top-1" />
+          <img src="/chef.svg" alt="Chef logo" width={72} height={42} className="relative -top-0.5" />
         </a>
         <a
           href="https://github.com/get-convex/chef"
           target="_blank"
           rel="noopener noreferrer"
-          className="relative hidden cursor-pointer select-none items-center gap-1.5 whitespace-nowrap rounded-md border bg-background-secondary p-1 text-sm font-medium text-content-primary transition-colors hover:bg-background-primary focus-visible:border focus-visible:border-border-selected focus-visible:outline-none sm:flex"
+          className="relative hidden cursor-pointer select-none items-center gap-2 whitespace-nowrap rounded-lg bg-bolt-elements-background-depth-3 p-2 text-sm font-medium text-bolt-elements-textPrimary transition-all hover:bg-bolt-elements-background-depth-2 focus-visible:border focus-visible:border-border-selected focus-visible:outline-none sm:flex shadow-sm"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
             <path
@@ -77,12 +77,12 @@ export function Header({ hideSidebarIcon = false }: { hideSidebarIcon?: boolean 
               fill="currentColor"
             />
           </svg>
-          Star on GitHub
+          <span className="font-medium">Star on GitHub</span>
         </a>
       </div>
       <>
         {chat.started && (
-          <span className="flex-1 truncate px-4 text-center text-content-primary">
+          <span className="flex-1 truncate px-4 text-center text-bolt-elements-textPrimary font-medium">
             <ClientOnly>{() => <ChatDescription />}</ClientOnly>
           </span>
         )}
@@ -125,13 +125,13 @@ export function Header({ hideSidebarIcon = false }: { hideSidebarIcon?: boolean 
                 >
                   <FeedbackButton showInMenu={true} />
                   <DiscordButton showInMenu={true} />
-                  <hr />
+                  <hr className="border-bolt-elements-borderColor" />
                   <MenuItemComponent action={handleSettingsClick}>
-                    <GearIcon className="text-content-secondary" />
+                    <GearIcon className="text-bolt-elements-textTertiary" />
                     Settings & Usage
                   </MenuItemComponent>
                   <MenuItemComponent action={handleLogout}>
-                    <ExitIcon className="text-content-secondary" />
+                    <ExitIcon className="text-bolt-elements-textTertiary" />
                     Log out
                   </MenuItemComponent>
                 </MenuComponent>

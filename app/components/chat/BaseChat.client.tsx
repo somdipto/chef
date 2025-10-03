@@ -1,7 +1,6 @@
 import { Sheet } from '@ui/Sheet';
 import type { Message } from 'ai';
 import React, { type ReactNode, type RefCallback, useCallback, useEffect, useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
 import Landing from '~/components/landing/Landing';
 import { Workbench } from '~/components/workbench/Workbench.client';
 import type { ToolStatus } from '~/lib/common/types';

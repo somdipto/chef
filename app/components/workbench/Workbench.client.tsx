@@ -188,8 +188,8 @@ export const Workbench = memo(function Workbench({
             )}
           >
             <div className="absolute inset-0 px-2 lg:px-6">
-              <div className="flex h-full flex-col overflow-hidden rounded-lg border bg-bolt-elements-background-depth-2 shadow">
-                <div className="flex items-center border-b px-3 py-2">
+              <div className="flex h-full flex-col overflow-hidden rounded-xl border border-bolt-elements-borderColor bg-gradient-to-b from-bolt-elements-background-depth-2 to-bolt-elements-background-depth-3 shadow-xl">
+                <div className="flex items-center border-b border-bolt-elements-borderColor bg-bolt-elements-background-depth-1 px-3 py-2.5">
                   <Slider selected={selectedView} options={sliderOptions} setSelected={setSelectedView} />
                   <div className="ml-auto" />
                   {selectedView === 'code' && (

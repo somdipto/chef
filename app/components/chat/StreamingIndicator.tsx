@@ -163,26 +163,28 @@ export default function StreamingIndicator(props: StreamingIndicatorProps) {
   return (
     <AnimatePresence>
       <motion.div
-        className="-mb-2 mt-2 w-full max-w-chat rounded-t-xl border bg-background-secondary pb-2 shadow"
-        initial={{ translateY: '100%' }}
-        animate={{ translateY: '0%' }}
-        exit={{ translateY: '100%' }}
-        transition={{ duration: 0.15 }}
+        className="mt-2 w-full max-w-chat rounded-lg border border-bolt-elements-borderColor bg-bolt-elements-background-depth-2 shadow-lg"
+        initial={{ translateY: '100%', opacity: 0 }}
+        animate={{ translateY: '0%', opacity: 1 }}
+        exit={{ translateY: '100%', opacity: 0 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
       >
         <div
           data-streaming-indicator-stream-status={streamStatus}
-          className={classNames('border-none shadow-none rounded-t-xl relative w-full max-w-chat mx-auto z-prompt')}
+          className={classNames('border-bolt-elements-borderColor rounded-lg relative w-full max-w-chat mx-auto z-prompt')}
         >
           <div
-            className={classNames('bg-background-secondary/75', 'p-1.5 text-content-primary rounded-t-xl', '', 'flex')}
+            className={classNames('bg-bolt-elements-background-depth-2', 'p-3 text-bolt-elements-textPrimary rounded-lg', '', 'flex')}
           >
             <div className="flex-1">
               <AnimatePresence>
                 <div className="actions">
                   <div className={classNames('flex text-sm gap-3')}>
-                    <div className="flex w-full items-center gap-1.5">
+                    <div className="flex w-full items-center gap-2">
                       <div className="">{icon}</div>
-                      {message}
+                      <span className={streamStatus === 'error' ? 'text-bolt-elements-textError' : 'text-bolt-elements-textPrimary'}>
+                        {message}
+                      </span>
                       <div className="min-h-6 grow" />
                       <LittleUsage
                         teamSlug={teamSlug}

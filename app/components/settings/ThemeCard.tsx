@@ -12,13 +12,7 @@ export function ThemeCard() {
         <div className="flex items-center justify-between">
           <span className="text-bolt-elements-textSecondary">Theme</span>
 
-          <Button 
-            variant="secondary"
-            onClick={() => toggleTheme()}
-            className="px-4 py-2 rounded-lg font-medium"
-          >
-            {theme === 'dark' ? 'Switch to Light' : 'Switch to Dark'}
-          </Button>
+          <Button onClick={() => toggleTheme()}>{theme === 'dark' ? 'Switch to Light' : 'Switch to Dark'}</Button>
         </div>
       </div>
     </div>

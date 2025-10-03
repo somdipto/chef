@@ -100,11 +100,13 @@ export const Messages = forwardRef<HTMLDivElement, MessagesProps>(function Messa
             <div
               key={index}
               className={classNames(
-                'flex gap-4 p-4 w-full rounded-[calc(0.75rem-1px)] relative border border-neutral-200 dark:border-neutral-700',
+                'flex gap-4 p-4 w-full rounded-xl relative border border-bolt-elements-borderColor shadow-sm transition-all duration-300',
                 {
                   'bg-bolt-elements-messages-background': isUserMessage,
+                  'animate-fadeInFromLoading': index === 0, // Only apply animation to first message
                 },
               )}
+              style={{ animationDelay: `${index * 50}ms` }}
             >
               {isUserMessage && (
                 <div className="flex size-[40px] shrink-0 items-center justify-center self-start overflow-hidden rounded-full bg-white text-gray-600 dark:bg-gray-800 dark:text-gray-500">
@@ -159,19 +161,19 @@ export const Messages = forwardRef<HTMLDivElement, MessagesProps>(function Messa
           );
         })
       ) : (
-        <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
-          <div className="mb-6 flex size-[64px] shrink-0 items-center justify-center rounded-full text-gray-600 dark:text-gray-500">
+        <div className="flex flex-col items-center justify-center px-4 py-16 text-center animate-fadeInFromLoading">
+          <div className="mb-6 flex size-[64px] shrink-0 items-center justify-center rounded-full bg-bolt-elements-background-depth-2 text-bolt-elements-textTertiary">
             <ChatBubbleIcon className="size-8" />
           </div>
-          <h3 className="mb-2 text-xl font-semibold text-content-primary">
+          <h3 className="mb-2 text-xl font-bold text-bolt-elements-textPrimary">
             Ready to cook up a new feature or fix a bug?
           </h3>
-          <p className="max-w-md text-content-secondary">Send a message below to start on your next task!</p>
+          <p className="max-w-md text-bolt-elements-textSecondary">Send a message below to start on your next task!</p>
         </div>
       )}
 
       {isStreaming && (
-        <div className="flex w-full justify-center text-content-secondary">
+        <div className="flex w-full justify-center text-bolt-elements-textSecondary py-4">
           <SpinnerThreeDots className="size-9" />
         </div>
       )}
