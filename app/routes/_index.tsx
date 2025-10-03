@@ -50,7 +50,7 @@ export default function Index() {
   */
 
   return (
-    <div className="flex size-full flex-col bg-bolt-elements-background-depth-1">
+    <div className="flex size-full flex-col bg-gradient-to-br from-bolt-elements-background-depth-1 to-bolt-elements-background-depth-2">
       <Header />
       <ClientOnly>{() => <Homepage />}</ClientOnly>
     </div>

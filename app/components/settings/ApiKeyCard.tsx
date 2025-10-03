@@ -62,14 +62,14 @@ export function ApiKeyCard() {
   };
 
   return (
-    <div className="rounded-lg border bg-bolt-elements-background-depth-1 shadow-sm">
+    <div className="rounded-xl border border-bolt-elements-borderColor bg-gradient-to-br from-bolt-elements-background-depth-1 to-bolt-elements-background-depth-2 shadow-lg">
       <div className="p-6">
-        <h2 className="mb-2 text-xl font-semibold text-content-primary">API Keys</h2>
+        <h2 className="mb-3 text-xl font-bold text-bolt-elements-textPrimary">API Keys</h2>
 
-        <p className="mb-1 max-w-prose text-sm text-content-secondary">
+        <p className="mb-2 max-w-prose text-sm text-bolt-elements-textSecondary">
           You can use your own API keys to cook with Chef. Supported providers: Anthropic, Google, OpenAI, and xAI.
         </p>
-        <p className="mb-4 max-w-prose text-sm text-content-secondary">
+        <p className="mb-5 max-w-prose text-sm text-bolt-elements-textSecondary">
           By default, Chef will use tokens built into your Convex plan.
         </p>
         <div className="space-y-4">
@@ -393,7 +393,7 @@ function AlwaysUseKeyCheckbox(props: {
     <Tooltip
       tip={props.disabled ? "You cannot use this setting when you don't have any API keys configured." : undefined}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5">
         <Checkbox
           checked={props.value}
           onChange={() => {
@@ -402,11 +402,11 @@ function AlwaysUseKeyCheckbox(props: {
           disabled={props.disabled}
           id="always-use-key"
         />
-        <label htmlFor="always-use-key" className="text-sm text-content-secondary">
+        <label htmlFor="always-use-key" className="text-sm text-bolt-elements-textSecondary">
           Always use my API keys
         </label>
         <Tooltip tip="When unchecked, your API key will only be used if you've run out of tokens built into your Convex plan">
-          <QuestionMarkCircledIcon />
+          <QuestionMarkCircledIcon className="text-bolt-elements-textTertiary" />
         </Tooltip>
       </div>
     </Tooltip>

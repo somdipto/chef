@@ -12,6 +12,58 @@ html,
 body {
   height: 100%;
   width: 100%;
+  font-feature-settings: "liga" 1, "calt" 1; /* Enable ligatures and contextual alternates */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Enhanced Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 2.5rem;
+  letter-spacing: -0.025em;
+}
+
+h2 {
+  font-size: 2rem;
+  letter-spacing: -0.02em;
+}
+
+h3 {
+  font-size: 1.75rem;
+  letter-spacing: -0.015em;
+}
+
+p {
+  line-height: 1.6;
+}
+
+.text-display {
+  font-family: 'GT America', system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.font-body {
+  font-family: system-ui, sans-serif;
+}
+
+/* Enhanced code styling */
+code {
+  font-size: 0.9em;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+}
+
+pre code {
+  padding: 0;
+  background: none;
+  overflow-x: auto;
+  max-width: 100%;
 }
 
 /* Temporary fix to make scrollbars look right in the production build */

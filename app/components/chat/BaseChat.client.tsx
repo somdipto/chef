@@ -1,6 +1,7 @@
 import { Sheet } from '@ui/Sheet';
 import type { Message } from 'ai';
 import React, { type ReactNode, type RefCallback, useCallback, useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import Landing from '~/components/landing/Landing';
 import { Workbench } from '~/components/workbench/Workbench.client';
 import type { ToolStatus } from '~/lib/common/types';
@@ -153,14 +154,41 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
               })}
             >
               {!chatStarted && (
-                <div id="intro" className="mx-auto mb-8 mt-12 max-w-chat px-4 text-center md:mt-16 lg:px-0">
-                  <h1 className="mb-2 animate-fadeInFromLoading font-display text-4xl font-black leading-none tracking-tight text-content-primary md:text-5xl lg:mb-4 lg:text-6xl">
+                <motion.div 
+                  id="intro" 
+                  className="mx-auto mb-8 mt-12 max-w-chat px-4 text-center md:mt-16 lg:px-0"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <h1 className="mb-4 animate-fadeInFromLoading font-display text-4xl font-black leading-none tracking-tight text-bolt-elements-textPrimary md:text-5xl lg:mb-6 lg:text-6xl bg-gradient-to-r from-cvx-accent to-cvx-blue-500 bg-clip-text text-transparent">
                     Now you&rsquo;re cooking
                   </h1>
-                  <p className="animate-fadeInFromLoading text-balance font-display text-lg font-medium text-content-secondary [animation-delay:200ms] [animation-fill-mode:backwards] md:text-xl">
+                  <p className="animate-fadeInFromLoading text-balance font-display text-lg font-medium text-bolt-elements-textSecondary [animation-delay:200ms] [animation-fill-mode:backwards] md:text-xl mb-8">
                     The open-source app generator powered by Convex
                   </p>
-                </div>
+                  <motion.div 
+                    className="inline-block"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.3, duration: 0.3 }}
+                  >
+                    <div className="relative overflow-hidden rounded-2xl border border-bolt-elements-borderColor bg-gradient-to-br from-bolt-elements-background-depth-2 to-bolt-elements-background-depth-1 p-0.5">
+                      <div className="rounded-xl bg-bolt-elements-background-depth-1 p-6">
+                        <div className="flex space-x-2 mb-4">
+                          <div className="h-3 w-3 rounded-full bg-red-500"></div>
+                          <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
+                          <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="h-4 w-3/4 rounded bg-bolt-elements-background-depth-3"></div>
+                          <div className="h-4 w-1/2 rounded bg-bolt-elements-background-depth-3"></div>
+                          <div className="h-4 w-5/6 rounded bg-bolt-elements-background-depth-3"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                </motion.div>
               )}
               <div
                 className={classNames('w-full', {
@@ -323,24 +351,24 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
           {!chatStarted && (
             <footer
               id="footer"
-              className="flex w-full flex-col justify-between gap-2 p-4 transition-opacity sm:flex-row"
+              className="flex w-full flex-col justify-between gap-4 p-6 transition-opacity sm:flex-row"
             >
               <div className="flex items-end">
                 <p>
                   <a
                     href="https://www.convex.dev/ai-platforms"
-                    className="font-display text-sm font-medium text-content-tertiary transition-colors hover:text-content-primary"
+                    className="font-display text-sm font-medium text-bolt-elements-textTertiary transition-colors hover:text-bolt-elements-textPrimary"
                   >
                     <span>Building your own prompt-to-app platform? Use Convex.</span>
                   </a>
                 </p>
               </div>
-              <div className="flex items-end gap-3 font-display text-lg font-medium text-content-tertiary">
+              <div className="flex items-end gap-4 font-display text-lg font-medium text-bolt-elements-textTertiary">
                 <p className="flex items-center">
                   Made&nbsp;by{' '}
                   <a
                     href="https://www.convex.dev"
-                    className="transition-colors hover:text-content-primary"
+                    className="transition-colors hover:text-bolt-elements-textPrimary"
                     aria-label="Convex"
                   >
                     <svg
@@ -382,12 +410,12 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                     </svg>
                   </a>
                 </p>
-                <hr className="h-8 w-0.5 bg-content-tertiary opacity-20" />
+                <hr className="h-8 w-px bg-bolt-elements-borderColor opacity-50" />
                 <p className="flex items-center">
                   Powered&nbsp;by{' '}
                   <a
                     href="https://bolt.new"
-                    className="contents transition-colors hover:text-content-primary"
+                    className="contents transition-colors hover:text-bolt-elements-textPrimary"
                     aria-label="Bolt"
                   >
                     <svg

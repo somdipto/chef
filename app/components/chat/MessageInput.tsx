@@ -251,9 +251,9 @@ export const MessageInput = memo(function MessageInput({
   );
 
   return (
-    <div className="relative z-20 mx-auto w-full max-w-chat rounded-xl shadow transition-all duration-200">
-      <div className="rounded-xl bg-background-primary/75 backdrop-blur-md">
-        <div className="rounded-t-xl border transition-all has-[textarea:focus]:border-border-selected">
+    <div className="relative z-20 mx-auto w-full max-w-chat rounded-xl shadow-lg transition-all duration-200">
+      <div className="rounded-xl bg-bolt-elements-background-depth-1 backdrop-blur-md border border-bolt-elements-borderColor/50 shadow-sm">
+        <div className="rounded-t-xl border border-bolt-elements-borderColor transition-all has-[textarea:focus]:border-bolt-elements-borderColor/100">
           <TextareaWithHighlights
             onKeyDown={handleKeyDown}
             onChange={handleChange}
@@ -274,7 +274,7 @@ export const MessageInput = memo(function MessageInput({
         </div>
         <div
           className={classNames(
-            'flex items-center gap-2 border rounded-b-xl border-t-0 bg-background-secondary/80 p-1.5 text-sm flex-wrap',
+            'flex items-center gap-2 border-t border-bolt-elements-borderColor bg-bolt-elements-background-depth-2 p-2 text-sm flex-wrap rounded-b-xl',
           )}
         >
           {chefAuthState.kind === 'fullyLoggedIn' && (
@@ -364,16 +364,20 @@ export const MessageInput = memo(function MessageInput({
                     : undefined
               }
               onClick={handleClickButton}
-              size="xs"
-              className="ml-2 h-[1.625rem]"
+              size="sm"
+              className="ml-2 h-9 w-9"
               aria-label={isStreaming ? 'Stop' : 'Send'}
               icon={
                 sendMessageInProgress ? (
                   <Spinner className="text-white" />
                 ) : !isStreaming ? (
-                  <ArrowRightIcon />
+                  <div className="flex items-center justify-center">
+                    <ArrowRightIcon className="w-4 h-4" />
+                  </div>
                 ) : (
-                  <StopIcon />
+                  <div className="flex items-center justify-center">
+                    <StopIcon className="w-4 h-4" />
+                  </div>
                 )
               }
             />
@@ -436,10 +440,10 @@ const TextareaWithHighlights = memo(function TextareaWithHighlights({
       <textarea
         ref={textareaRef}
         className={classNames(
-          'w-full px-3 py-3 outline-none resize-none text-content-primary placeholder-content-tertiary bg-transparent text-sm leading-snug',
+          'w-full px-4 py-4 outline-none resize-none text-bolt-elements-textPrimary placeholder-bolt-elements-textTertiary bg-transparent text-sm leading-snug',
           'transition-opacity',
           'disabled:opacity-50 disabled:cursor-not-allowed',
-          'scrollbar-thin scrollbar-thumb-macosScrollbar-thumb scrollbar-track-transparent',
+          'scrollbar-thin scrollbar-thumb-bolt-elements-borderColor scrollbar-track-transparent',
         )}
         disabled={disabled}
         onKeyDown={onKeyDown}

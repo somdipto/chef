@@ -1,11 +1,18 @@
+import { motion } from 'framer-motion';
+
 export default function Landing() {
   return (
-    <div className="my-12 flex max-w-chat flex-col">
-      <div className="overflow-hidden rounded-lg border border-neutral-2 dark:border-neutral-10">
-        <div className="flex items-center border-b border-neutral-2 bg-neutral-1/20 px-4 py-2 dark:border-neutral-10 dark:bg-neutral-11">
+    <div className="my-12 flex max-w-2xl mx-auto flex-col">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="overflow-hidden rounded-xl border border-bolt-elements-borderColor bg-gradient-to-br from-bolt-elements-background-depth-2 to-bolt-elements-background-depth-1 shadow-lg dark:shadow-bolt-elements-contentDivider"
+      >
+        <div className="flex items-center border-b border-bolt-elements-borderColor bg-bolt-elements-background-depth-1/50 px-4 py-3 dark:bg-bolt-elements-background-depth-3">
           <a
             href="https://github.com/get-convex/chef"
-            className="flex items-center gap-2 hover:text-neutral-9 dark:hover:text-neutral-4"
+            className="flex items-center gap-2 hover:text-bolt-elements-textPrimary dark:hover:text-bolt-elements-textSecondary transition-colors"
           >
             <svg
               aria-hidden="true"
@@ -19,25 +26,35 @@ export default function Landing() {
             >
               <path d="M0 1.75A.75.75 0 0 1 .75 1h4.253c1.227 0 2.317.59 3 1.501A3.743 3.743 0 0 1 11.006 1h4.245a.75.75 0 0 1 .75.75v10.5a.75.75 0 0 1-.75.75h-4.507a2.25 2.25 0 0 0-1.591.659l-.622.621a.75.75 0 0 1-1.06 0l-.622-.621A2.25 2.25 0 0 0 5.258 13H.75a.75.75 0 0 1-.75-.75Zm7.251 10.324.004-5.073-.002-2.253A2.25 2.25 0 0 0 5.003 2.5H1.5v9h3.757a3.75 3.75 0 0 1 1.994.574ZM8.755 4.75l-.004 7.322a3.752 3.752 0 0 1 1.992-.572H14.5v-9h-3.495a2.25 2.25 0 0 0-2.25 2.25Z" />
             </svg>
-            <span className="text-sm font-semibold text-neutral-9 dark:text-neutral-2">README</span>
+            <span className="text-sm font-semibold text-bolt-elements-textPrimary dark:text-bolt-elements-textSecondary">README</span>
           </a>
         </div>
-        <div className="flex flex-col gap-6 px-4 py-6 text-lg text-neutral-9 dark:text-neutral-2">
-          <p>
+        <div className="flex flex-col gap-6 px-6 py-8 text-base sm:text-lg text-bolt-elements-textSecondary dark:text-bolt-elements-textSecondary">
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+            className="leading-relaxed"
+          >
             Chef is open-source, check out the GitHub repo{' '}
             <a
               href="https://github.com/get-convex/chef"
-              className="font-semibold text-bolt-elements-button-primary-backgroundHover hover:underline dark:text-white"
+              className="font-semibold text-bolt-elements-button-primary-backgroundHover hover:underline transition-colors"
             >
               here
             </a>
             .
-          </p>
-          <p>
+          </motion.p>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="leading-relaxed"
+          >
             This is the only AI app builder that knows backend. By applying{' '}
             <a
               href="https://convex.dev"
-              className="font-semibold text-bolt-elements-button-primary-backgroundHover hover:underline dark:text-white"
+              className="font-semibold text-bolt-elements-button-primary-backgroundHover hover:underline transition-colors"
             >
               Convex
             </a>{' '}
@@ -47,55 +64,75 @@ export default function Landing() {
             Chef, you can view or download the system prompt{' '}
             <a
               href="https://github.com/get-convex/chef/releases/latest"
-              className="font-semibold text-bolt-elements-button-primary-backgroundHover hover:underline dark:text-white"
+              className="font-semibold text-bolt-elements-button-primary-backgroundHover hover:underline transition-colors"
             >
               here
             </a>
             .
-          </p>
-          <p>
+          </motion.p>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="leading-relaxed"
+          >
             As mentioned above, Chef&apos;s capabilities are enabled by being built on top of{' '}
             <a
               href="https://convex.dev"
-              className="font-semibold text-bolt-elements-button-primary-backgroundHover hover:underline dark:text-white"
+              className="font-semibold text-bolt-elements-button-primary-backgroundHover hover:underline transition-colors"
             >
               Convex
             </a>
             , the open-source reactive database designed to make life easy for web app developers. The
             &ldquo;magic&rdquo; in Chef is just the fact that it&apos;s using Convex&apos;s APIs, which are an ideal fit
             for codegen.
-          </p>
-          <p>
+          </motion.p>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+            className="leading-relaxed"
+          >
             Development of the Chef is led by the Convex team. We{' '}
             <a
               href="https://github.com/get-convex/chef/blob/main/CONTRIBUTING.md"
-              className="font-semibold text-bolt-elements-button-primary-backgroundHover hover:underline dark:text-white"
+              className="font-semibold text-bolt-elements-button-primary-backgroundHover hover:underline transition-colors"
             >
               welcome bug fixes
             </a>{' '}
             and{' '}
             <a
               href="https://discord.gg/convex"
-              className="font-semibold text-bolt-elements-button-primary-backgroundHover hover:underline dark:text-white"
+              className="font-semibold text-bolt-elements-button-primary-backgroundHover hover:underline transition-colors"
             >
               love receiving feedback
             </a>
             .
-          </p>
-          <p>
+          </motion.p>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+            className="leading-relaxed"
+          >
             This project is a fork of the stable branch of{' '}
             <a
               href="https://github.com/stackblitz-labs/bolt.diy"
-              className="font-semibold text-bolt-elements-button-primary-backgroundHover hover:underline dark:text-white"
+              className="font-semibold text-bolt-elements-button-primary-backgroundHover hover:underline transition-colors"
             >
               bolt.diy
             </a>
             .
-          </p>
-          <div className="flex justify-center">
+          </motion.p>
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="flex justify-center pt-2"
+          >
             <a
               href="https://github.com/get-convex/chef"
-              className="inline-flex items-center gap-2 rounded-lg border border-neutral-3 bg-neutral-1/50 px-3 py-2 text-lg text-neutral-12 transition-all hover:bg-neutral-1 dark:border-neutral-700 dark:bg-neutral-11 dark:text-neutral-2 dark:hover:bg-neutral-10"
+              className="inline-flex items-center gap-2 rounded-lg border border-bolt-elements-borderColor bg-bolt-elements-background-depth-1 px-5 py-2.5 text-base font-medium text-bolt-elements-textPrimary transition-all hover:bg-bolt-elements-background-depth-3 hover:shadow-md dark:border-bolt-elements-borderColor dark:bg-bolt-elements-background-depth-3 dark:text-bolt-elements-textPrimary dark:hover:bg-bolt-elements-background-depth-2"
             >
               <svg className="size-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path
@@ -106,9 +143,9 @@ export default function Landing() {
               </svg>
               View on GitHub
             </a>
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
