@@ -24,9 +24,11 @@
   "author": "Crypto Trading Bot",
   "license": "MIT",
   "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
     "concurrently": "^7.0.0"
   },
   "dependencies": {
+    "@openzeppelin/contracts": "^4.9.6",
     "hardhat": "^2.12.0"
   }
 }

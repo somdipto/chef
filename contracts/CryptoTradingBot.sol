@@ -2,10 +2,15 @@
 pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract CryptoTradingBot is Ownable, ReentrancyGuard {
+    using SafeERC20 for IERC20;
+    using SafeMath for uint256;
+
     // Trading strategy parameters
     struct Strategy {
         uint256 minBalance; // Minimum balance required to execute trades
@@ -33,6 +38,17 @@ contract CryptoTradingBot is Ownable, ReentrancyGuard {
     mapping(address => uint256) public lastTradeTime;
     uint256 public minTradeInterval = 1 minutes; // Minimum time between trades
 
+    // Position tracking for more accurate PnL calculation
+    struct Position {
+        uint256 baseAmount;    // Amount of base token used to buy quote token
+        uint256 quoteAmount;   // Amount of quote token bought
+        uint256 entryPrice;    // Price at which position was opened
+        uint256 timestamp;     // Time when position was opened
+    }
+    
+    Position[] public positions;
+    mapping(uint256 => address) public positionTraders; // Maps position index to trader
+
     // Events
     event TradeExecuted(
         uint256 indexed tradeId,
@@ -41,6 +57,23 @@ contract CryptoTradingBot is Ownable, ReentrancyGuard {
         uint256 quoteAmount,
         uint256 price,
         bool isBuy,
+        int256 pnl
+    );
+
+    event PositionOpened(
+        uint256 indexed positionId,
+        address indexed trader,
+        uint256 baseAmount,
+        uint256 quoteAmount,
+        uint256 entryPrice
+    );
+
+    event PositionClosed(
+        uint256 indexed positionId,
+        address indexed trader,
+        uint256 quoteAmount,
+        uint256 baseAmount,
+        uint256 exitPrice,
         int256 pnl
     );
 
@@ -75,6 +108,7 @@ contract CryptoTradingBot is Ownable, ReentrancyGuard {
         require(authorizedDexs[dex], "DEX not authorized");
         require(amount <= strategy.maxTradeAmount, "Amount exceeds max trade limit");
         require(block.timestamp >= lastTradeTime[msg.sender] + minTradeInterval, "Trade too soon");
+        require(block.timestamp <= deadline, "Trade expired");
 
         // Validate trading strategy thresholds
         uint8 signalThreshold = isBuy ? strategy.buyThreshold : strategy.sellThreshold;
@@ -89,11 +123,27 @@ contract CryptoTradingBot is Ownable, ReentrancyGuard {
         require(balance >= amount, "Insufficient balance for trade");
 
         // Approve DEX for token spending
-        require(tokenToSpend.approve(dex, amount), "Approval failed");
+        tokenToSpend.safeApprove(dex, 0); // Reset to 0 first to avoid issues with some tokens
+        tokenToSpend.safeApprove(dex, amount);
 
         // Execute trade via DEX
         if (isBuy) {
             amountOut = _executeBuy(dex, amount, minReturn, deadline);
+            
+            // Record the position for PnL calculation
+            uint256 currentPrice = _getCurrentPrice();
+            Position memory newPosition = Position({
+                baseAmount: amount,
+                quoteAmount: amountOut,
+                entryPrice: currentPrice,
+                timestamp: block.timestamp
+            });
+            
+            positions.push(newPosition);
+            uint256 positionId = positions.length - 1;
+            positionTraders[positionId] = msg.sender;
+            
+            emit PositionOpened(positionId, msg.sender, amount, amountOut, currentPrice);
         } else {
             amountOut = _executeSell(dex, amount, minReturn, deadline);
         }
@@ -103,8 +153,8 @@ contract CryptoTradingBot is Ownable, ReentrancyGuard {
         lastTradeTime[msg.sender] = block.timestamp;
 
         // Calculate PnL if possible
-        int256 pnl = _calculatePnL(isBuy, amount, amountOut);
-        totalPnL += pnl;
+        int256 pnl = isBuy ? int256(0) : _calculatePnLForSell(amount, amountOut); // Only calculate PnL for sells
+        totalPnL = pnl >= 0 ? totalPnL.add(uint256(pnl)) : totalPnL.sub(uint256(-pnl));
         
         if (pnl >= 0) {
             successfulTrades++;
@@ -121,9 +171,10 @@ contract CryptoTradingBot is Ownable, ReentrancyGuard {
         uint256 minReturn,
         uint256 deadline
     ) internal returns (uint256 amountOut) {
-        // This function would interact with the DEX to execute the buy order
-        // In a real implementation, you would have specific code for different DEXs
-        // This is a simplified placeholder
+        // Get the initial quote token balance to measure the output
+        uint256 initialQuoteBalance = quoteToken.balanceOf(address(this));
+        
+        // Call the DEX to execute the swap
         (bool success, bytes memory data) = dex.call(
             abi.encodeWithSignature(
                 "swapExactTokensForTokens(uint256,uint256,address[],address,uint256)",
@@ -134,8 +185,12 @@ contract CryptoTradingBot is Ownable, ReentrancyGuard {
                 deadline
             )
         );
+        
         require(success, "Buy execution failed");
-        amountOut = abi.decode(data, (uint256[]))[1]; // Assuming Uniswap-like return
+        
+        // Calculate the actual amount received
+        uint256 finalQuoteBalance = quoteToken.balanceOf(address(this));
+        amountOut = finalQuoteBalance.sub(initialQuoteBalance);
     }
 
     function _executeSell(
@@ -144,7 +199,10 @@ contract CryptoTradingBot is Ownable, ReentrancyGuard {
         uint256 minReturn,
         uint256 deadline
     ) internal returns (uint256 amountOut) {
-        // This function would interact with the DEX to execute the sell order
+        // Get the initial base token balance to measure the output
+        uint256 initialBaseBalance = baseToken.balanceOf(address(this));
+        
+        // Call the DEX to execute the swap
         (bool success, bytes memory data) = dex.call(
             abi.encodeWithSignature(
                 "swapExactTokensForTokens(uint256,uint256,address[],address,uint256)",
@@ -155,8 +213,12 @@ contract CryptoTradingBot is Ownable, ReentrancyGuard {
                 deadline
             )
         );
+        
         require(success, "Sell execution failed");
-        amountOut = abi.decode(data, (uint256[]))[1]; // Assuming Uniswap-like return
+        
+        // Calculate the actual amount received
+        uint256 finalBaseBalance = baseToken.balanceOf(address(this));
+        amountOut = finalBaseBalance.sub(initialBaseBalance);
     }
 
     function _getRoute(address tokenIn, address tokenOut) internal pure returns (address[] memory) {
@@ -166,12 +228,14 @@ contract CryptoTradingBot is Ownable, ReentrancyGuard {
         return path;
     }
 
-    function _calculatePnL(bool isBuy, uint256 amountIn, uint256 amountOut) internal view returns (int256) {
-        // Simplified PnL calculation
-        // In a real implementation, you would track entry prices and calculate actual PnL
+    function _calculatePnLForSell(uint256 quoteAmountSold, uint256 baseAmountReceived) internal view returns (int256) {
+        // In a real implementation with oracle integration, this would use real prices
+        // For now, we'll implement a basic PnL calculation based on current price
         uint256 currentPrice = _getCurrentPrice();
-        uint256 valueAfter = (amountOut * currentPrice) / 10**18; // Assuming 18 decimals
-        uint256 valueBefore = amountIn; // Simplified for demo
+        
+        // Calculate the current value of the tokens sold
+        uint256 valueBefore = (quoteAmountSold * currentPrice) / 10**18; // Assuming 18 decimals
+        uint256 valueAfter = baseAmountReceived;
         
         if (valueAfter > valueBefore) {
             return int256(valueAfter - valueBefore);
@@ -180,10 +244,15 @@ contract CryptoTradingBot is Ownable, ReentrancyGuard {
         }
     }
 
+    /**
+     * @dev This would be implemented with oracle integration in production
+     * For now, returning a mock price - this should be replaced with a real oracle
+     */
     function _getCurrentPrice() internal view returns (uint256) {
-        // This would be implemented with oracle integration in production
-        // For now, returning a mock price
-        return 10**18; // Mock price
+        // In production, this would fetch from Chainlink or other oracle
+        // For now, return a placeholder price
+        // This is a critical improvement needed for production
+        return 10**18; // Placeholder - needs real oracle
     }
 
     /**
@@ -206,6 +275,7 @@ contract CryptoTradingBot is Ownable, ReentrancyGuard {
      * @dev Set minimum trade interval
      */
     function setMinTradeInterval(uint256 interval) external onlyOwner {
+        require(interval >= 30 seconds, "Minimum trade interval too low");
         minTradeInterval = interval;
     }
 
@@ -213,7 +283,7 @@ contract CryptoTradingBot is Ownable, ReentrancyGuard {
      * @dev Withdraw tokens (only owner)
      */
     function withdrawTokens(address token, uint256 amount) external onlyOwner {
-        IERC20(token).transfer(owner(), amount);
+        IERC20(token).safeTransfer(owner(), amount);
     }
 
     /**
@@ -226,5 +296,27 @@ contract CryptoTradingBot is Ownable, ReentrancyGuard {
         uint256 _totalPnL
     ) {
         return (totalTrades, successfulTrades, failedTrades, totalPnL);
+    }
+
+    /**
+     * @dev Get current position count
+     */
+    function getPositionCount() external view returns (uint256) {
+        return positions.length;
+    }
+
+    /**
+     * @dev Get position details by index
+     */
+    function getPosition(uint256 index) external view returns (
+        uint256 baseAmount,
+        uint256 quoteAmount,
+        uint256 entryPrice,
+        uint256 timestamp
+    ) {
+        require(index < positions.length, "Position index out of bounds");
+        
+        Position memory pos = positions[index];
+        return (pos.baseAmount, pos.quoteAmount, pos.entryPrice, pos.timestamp);
     }
 }

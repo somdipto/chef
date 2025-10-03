@@ -1,16 +1,19 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 /**
  * @title CryptoToken
  * @dev Mock token to represent crypto assets in the exchange
  */
 contract CryptoToken is ERC20, Ownable {
-    constructor(string memory name, string memory symbol) ERC20(name, symbol) Ownable(msg.sender) {
+    constructor(string memory name, string memory symbol) ERC20(name, symbol) {
+        _transferOwnership(msg.sender);
         // Mint initial supply: 100 million tokens (with proper decimals)
         _mint(msg.sender, 100_000_000 * 10**decimals());
     }
@@ -25,6 +28,8 @@ contract CryptoToken is ERC20, Ownable {
  * @dev A decentralized exchange for trading cryptocurrencies with real-time price feeds
  */
 contract CryptoExchange is Ownable, ReentrancyGuard {
+    using SafeERC20 for IERC20;
+    using SafeMath for uint256;
 
     // Crypto asset information
     struct Asset {
@@ -56,6 +61,7 @@ contract CryptoExchange is Ownable, ReentrancyGuard {
     // Minimum values for trading
     uint256 public constant MIN_TRADE_AMOUNT = 10**6; // Minimum trade amount in token units
     uint256 public constant FEE_PERCENTAGE = 1; // 0.1% fee (in basis points * 10)
+    uint256 public maxPriceChange = 1000; // Max price change allowed: 10% (with 2 decimals)
 
     // Events for tracking important operations
     event AssetAdded(address indexed assetAddress, string name, uint256 initialPrice);
@@ -64,11 +70,14 @@ contract CryptoExchange is Ownable, ReentrancyGuard {
     event TokensSold(address indexed seller, address indexed asset, uint256 quantity, uint256 ethReceived);
     event EthDeposited(address indexed user, uint256 amount);
     event EthWithdrawn(address indexed user, uint256 amount);
+    event MaxPriceChangeUpdated(uint256 newMaxPriceChange);
+    event AssetVerified(address indexed assetAddress, string name);
 
     /**
      * @dev Initializes the contract with an exchange token
      */
-    constructor(address _exchangeTokenAddress) Ownable(msg.sender) {
+    constructor(address _exchangeTokenAddress) {
+        _transferOwnership(msg.sender);
         exchangeToken = CryptoToken(_exchangeTokenAddress);
     }
 
@@ -80,7 +89,9 @@ contract CryptoExchange is Ownable, ReentrancyGuard {
      */
     function addAsset(address assetAddress, string memory name, uint256 initialPrice) external onlyOwner {
         require(assetAddress != address(0), "Invalid asset address");
+        require(assetAddress != address(exchangeToken), "Cannot add exchange token as asset");
         require(!assets[assetAddress].isActive, "Asset already exists");
+        require(initialPrice > 0, "Price must be greater than 0");
         
         assets[assetAddress] = Asset({
             name: name,
@@ -96,7 +107,7 @@ contract CryptoExchange is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @dev Updates the price of a crypto asset
+     * @dev Updates the price of a crypto asset with safety checks
      * @param assetAddress The address of the crypto asset
      * @param newPrice The new price in USD * 10^8
      */
@@ -104,8 +115,25 @@ contract CryptoExchange is Ownable, ReentrancyGuard {
         require(assets[assetAddress].isActive, "Asset does not exist or inactive");
         require(newPrice > 0, "Price must be greater than 0");
         
+        uint256 oldPrice = assets[assetAddress].price;
+        uint256 priceChangePercent = (oldPrice > newPrice) 
+            ? (oldPrice - newPrice) * 10000 / oldPrice  // Avoid underflow
+            : (newPrice - oldPrice) * 10000 / oldPrice;
+        
+        require(priceChangePercent <= maxPriceChange, "Price change too large");
+        
         assets[assetAddress].price = newPrice;
         emit AssetPriceUpdated(assetAddress, newPrice);
+    }
+
+    /**
+     * @dev Sets the maximum allowed price change percentage
+     * @param newMaxPriceChange The new maximum price change (with 2 decimals, e.g. 1000 = 10%)
+     */
+    function setMaxPriceChange(uint256 newMaxPriceChange) external onlyOwner {
+        require(newMaxPriceChange <= 5000, "Max price change too high (max 50%)");
+        maxPriceChange = newMaxPriceChange;
+        emit MaxPriceChangeUpdated(newMaxPriceChange);
     }
 
     /**
@@ -113,7 +141,7 @@ contract CryptoExchange is Ownable, ReentrancyGuard {
      */
     function depositEth() external payable nonReentrant {
         require(msg.value > 0, "Must send ETH to deposit");
-        portfolios[msg.sender].ethBalance += msg.value;
+        portfolios[msg.sender].ethBalance = portfolios[msg.sender].ethBalance.add(msg.value);
         emit EthDeposited(msg.sender, msg.value);
     }
 
@@ -122,8 +150,10 @@ contract CryptoExchange is Ownable, ReentrancyGuard {
      * @param amount The amount of ETH to withdraw
      */
     function withdrawEth(uint256 amount) external nonReentrant {
+        require(amount > 0, "Amount must be greater than 0");
         require(portfolios[msg.sender].ethBalance >= amount, "Insufficient ETH balance");
-        portfolios[msg.sender].ethBalance -= amount;
+        
+        portfolios[msg.sender].ethBalance = portfolios[msg.sender].ethBalance.sub(amount);
         payable(msg.sender).transfer(amount);
         emit EthWithdrawn(msg.sender, amount);
     }
@@ -142,20 +172,21 @@ contract CryptoExchange is Ownable, ReentrancyGuard {
         
         // Calculate fees (0.1% of trade value)
         uint256 fees = (totalCost * FEE_PERCENTAGE) / 1000;
-        uint256 totalWithFees = totalCost + fees;
+        uint256 totalWithFees = totalCost.add(fees);
         
         require(msg.value >= totalWithFees, "Insufficient ETH sent");
         
         // Update user portfolio
-        portfolios[msg.sender].assets[assetAddress] += quantity;
+        portfolios[msg.sender].assets[assetAddress] = portfolios[msg.sender].assets[assetAddress].add(quantity);
         
         // Update asset supply and market cap
-        assets[assetAddress].totalSupply += quantity;
+        assets[assetAddress].totalSupply = assets[assetAddress].totalSupply.add(quantity);
         assets[assetAddress].marketCap = (assets[assetAddress].price * assets[assetAddress].totalSupply) / 10**8;
         
         // Refund excess ETH
         if (msg.value > totalWithFees) {
-            payable(msg.sender).transfer(msg.value - totalWithFees);
+            uint256 refund = msg.value.sub(totalWithFees);
+            payable(msg.sender).transfer(refund);
         }
         
         // Transfer fees to owner
@@ -181,14 +212,14 @@ contract CryptoExchange is Ownable, ReentrancyGuard {
         
         // Calculate fees (0.1% of trade value)
         uint256 fees = (totalValue * FEE_PERCENTAGE) / 1000;
-        uint256 netValue = totalValue - fees;
+        uint256 netValue = totalValue.sub(fees);
         
         // Update user portfolio
-        portfolios[msg.sender].assets[assetAddress] -= quantity;
-        portfolios[msg.sender].ethBalance += netValue;
+        portfolios[msg.sender].assets[assetAddress] = portfolios[msg.sender].assets[assetAddress].sub(quantity);
+        portfolios[msg.sender].ethBalance = portfolios[msg.sender].ethBalance.add(netValue);
         
         // Update asset supply and market cap
-        assets[assetAddress].totalSupply -= quantity;
+        assets[assetAddress].totalSupply = assets[assetAddress].totalSupply.sub(quantity);
         assets[assetAddress].marketCap = (assets[assetAddress].price * assets[assetAddress].totalSupply) / 10**8;
         
         // Transfer fees to owner
@@ -254,6 +285,25 @@ contract CryptoExchange is Ownable, ReentrancyGuard {
         }
         
         return (assetAddresses, balances, prices);
+    }
+
+    /**
+     * @dev Emergency function to withdraw ETH from the contract (only owner)
+     * This is for emergency situations if ETH gets stuck
+     */
+    function withdrawETHFromContract(uint256 amount) external onlyOwner {
+        require(address(this).balance >= amount, "Insufficient contract balance");
+        payable(owner()).transfer(amount);
+    }
+
+    /**
+     * @dev Emergency function to withdraw tokens from the contract (only owner)
+     * This is for emergency situations if tokens get stuck
+     */
+    function withdrawTokensFromContract(address tokenAddress, uint256 amount) external onlyOwner {
+        IERC20 token = IERC20(tokenAddress);
+        require(token.balanceOf(address(this)) >= amount, "Insufficient token balance");
+        token.safeTransfer(owner(), amount);
     }
 
     /**

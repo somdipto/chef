@@ -1,10 +1,23 @@
 const { ethers } = require("hardhat");
 
 async function main() {
-  // This would be the addresses of actual tokens on the network
-  // Using placeholder addresses here
-  const DUMMY_TOKEN_1 = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // Placeholder
-  const DUMMY_TOKEN_2 = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"; // Placeholder
+  // Deploy CRP Governance Token first
+  console.log("Deploying CRP Governance Token...");
+  const CRPToken = await ethers.getContractFactory("CRPToken");
+  const crpToken = await CRPToken.deploy();
+  await crpToken.deployed();
+  console.log("CRP Token deployed to:", crpToken.address);
+
+  // Deploy mock tokens for the trading bot (for testing purposes)
+  console.log("Deploying mock tokens for trading bot...");
+  const CryptoToken = await ethers.getContractFactory("CryptoToken");
+  const baseToken = await CryptoToken.deploy("USD Coin", "USDC");
+  await baseToken.deployed();
+  console.log("Base token (USDC) deployed to:", baseToken.address);
+
+  const quoteToken = await CryptoToken.deploy("Wrapped Ether", "WETH");
+  await quoteToken.deployed();
+  console.log("Quote token (WETH) deployed to:", quoteToken.address);
 
   // Initialize strategy parameters
   const strategy = {
@@ -20,14 +33,24 @@ async function main() {
   
   const CryptoTradingBot = await ethers.getContractFactory("CryptoTradingBot");
   const cryptoTradingBot = await CryptoTradingBot.deploy(
-    DUMMY_TOKEN_1, // Base token
-    DUMMY_TOKEN_2, // Quote token
+    baseToken.address, // Base token
+    quoteToken.address, // Quote token
     strategy
   );
 
   await cryptoTradingBot.deployed();
 
   console.log("CryptoTradingBot deployed to:", cryptoTradingBot.address);
+
+  // Deploy CryptoExchange
+  console.log("Deploying CryptoExchange contract...");
+  
+  const CryptoExchange = await ethers.getContractFactory("CryptoExchange");
+  const cryptoExchange = await CryptoExchange.deploy(crpToken.address);
+
+  await cryptoExchange.deployed();
+
+  console.log("CryptoExchange deployed to:", cryptoExchange.address);
 }
 
 main()

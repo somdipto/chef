@@ -66,13 +66,13 @@ describe("CryptoExchange", function () {
       
       await expect(
         cryptoExchange.addAsset(
-          await newToken.getAddress(),
+          newToken.target,
           "Test Asset",
           10000000000 // $100 equivalent
         )
       )
         .to.emit(cryptoExchange, "AssetAdded")
-        .withArgs(await newToken.getAddress(), "Test Asset");
+        .withArgs(newToken.target, "Test Asset", 10000000000);
     });
 
     it("Should not allow non-owner to add assets", async function () {
@@ -81,11 +81,11 @@ describe("CryptoExchange", function () {
       
       await expect(
         cryptoExchange.connect(user1).addAsset(
-          await newToken.getAddress(),
+          newToken.target,
           "Test Asset",
           10000000000 // $100 equivalent
         )
-      ).to.be.revertedWith("OwnableUnauthorizedAccount");
+      ).to.be.revertedWith("Ownable: caller is not the owner");
     });
   });
 
